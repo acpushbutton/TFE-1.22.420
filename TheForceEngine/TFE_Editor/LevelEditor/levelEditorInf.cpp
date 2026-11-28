@@ -1893,7 +1893,7 @@ namespace LevelEditor
 	{
 		modifySectorGeometry();
 		findInfChangesForHistory();
-		clearInfItemTemp();
+		clearInfItemBaseline();
 	}
 
 	const char* c_infElevFlagNames[] =
@@ -4565,11 +4565,11 @@ namespace LevelEditor
 			// Only init history things if not returning from a selection case
 			if (!s_infEditor.wasSelecting)
 			{
-				clearInfItemTemp();
+				clearInfItemBaseline();
 				s_infItemBaseline.totalItemCount = (s32)s_levelInf.item.size();
 				if (s_infEditor.item)
 				{
-					setInfItemTemp(s_infEditor.item);
+					setInfItemBaseline(s_infEditor.item);
 				}
 			}
 			s_infEditor.wasSelecting = false;
