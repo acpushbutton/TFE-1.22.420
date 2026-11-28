@@ -260,8 +260,6 @@ namespace LevelEditor
 	static std::vector<f32> s_stopValue;
 	static std::vector<EditorSector*> s_sectorsToFixup;
 
-	bool s_writeLog = false;
-
 	void editor_selectViewportFeature(Editor_InfClass* editClass, SelectMode mode, SelectionType type, s32 index0 = -1, s32 index1 = -1);
 	void modifySectorGeometry(Editor_InfItem* item = nullptr, EditorSector* sector = nullptr, Editor_InfElevator* elev = nullptr, s32 stopIndex = -1);
 	void modifySectorGeometryTime(Editor_InfItem* item = nullptr, EditorSector* sector = nullptr, Editor_InfElevator* elev = nullptr, f32 time = -1.0f);
@@ -278,37 +276,6 @@ namespace LevelEditor
 	u32 newInfUniqueId()
 	{
 		return ++s_infClassSerial;
-	}
-
-	bool debugInfSerialDuplicateExists(const Editor_LevelInf& infData)
-	{
-		if (infData.item.empty()) { return false; }
-
-		std::vector<const Editor_InfClass*> infClasses;
-		infClasses.reserve(infData.item.size() * 3);
-		for (const Editor_InfItem infItem : infData.item)
-		{
-			for (const Editor_InfClass* infClass : infItem.classData)
-			{
-				infClasses.push_back(infClass);
-			}
-		}
-
-		size_t classCount = infClasses.size();
-		if (classCount <= 1) { return false; }
-		for (size_t i = 0; i < classCount - 1; i++)
-		{
-			for (size_t j = i + 1; j < classCount; j++)
-			{
-				if (infClasses[i]->uniqueId == infClasses[j]->uniqueId)
-				{
-					LE_ERROR("Duplicate inf IDs: %d", infClasses[i]->uniqueId);
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	Editor_InfElevator* allocElev(Editor_InfItem* item)
@@ -602,7 +569,6 @@ namespace LevelEditor
 		if (lElev->slaves.size() != rElev->slaves.size() ||
 			lElev->stops.size() != rElev->stops.size())
 		{
-			if (s_writeLog) LE_WARNING("elev slave/stop count mismatch");
 			return false;
 		}
 
@@ -620,7 +586,6 @@ namespace LevelEditor
 			lElev->eventMask != rElev->eventMask ||
 			lElev->entityMask != rElev->entityMask)
 		{
-			if (s_writeLog) LE_WARNING("elevs don't match");
 			return false;
 		}
 
@@ -629,7 +594,6 @@ namespace LevelEditor
 			if (lElev->slaves[j].name != rElev->slaves[j].name ||
 				lElev->slaves[j].angleOffset != rElev->slaves[j].angleOffset)
 			{
-				if (s_writeLog) LE_WARNING("elev slave index %zu don't match", j);
 				return false;
 			}
 		}
@@ -643,7 +607,6 @@ namespace LevelEditor
 				lStop->msg.size() != rStop->msg.size() ||
 				lStop->scriptCall.size() != rStop->scriptCall.size())
 			{
-				if (s_writeLog) LE_WARNING("elev stop index %zu cmd vecs dont match", j);
 				return false;
 			}
 
@@ -655,7 +618,6 @@ namespace LevelEditor
 				lStop->delay != rStop->delay ||
 				lStop->page != rStop->page)
 			{
-				if (s_writeLog) LE_WARNING("elev stop index %zu data dont match", j);
 				return false;
 			}
 
@@ -668,7 +630,6 @@ namespace LevelEditor
 					lAdj->wallIndex0 != rAdj->wallIndex0 ||
 					lAdj->wallIndex1 != rAdj->wallIndex1)
 				{
-					if (s_writeLog) LE_WARNING("elev stop index %zu adj index %zu data dont match", j, k);
 					return false;
 				}
 			}
@@ -680,7 +641,6 @@ namespace LevelEditor
 				if (lTex->donorSector != rTex->donorSector ||
 					lTex->fromCeiling != rTex->fromCeiling)
 				{
-					if (s_writeLog) LE_WARNING("elev stop index %zu tex index %zu data dont match", j, k);
 					return false;
 				}
 			}
@@ -695,7 +655,6 @@ namespace LevelEditor
 					lMsg->eventFlags != rMsg->eventFlags ||
 					(lMsg->arg[0] != rMsg->arg[0] || lMsg->arg[1] != rMsg->arg[1]))
 				{
-					if (s_writeLog) LE_WARNING("elev index %zu stop index %zu msg index %zu data dont match", j, k);
 					return false;
 				}
 			}
@@ -710,7 +669,6 @@ namespace LevelEditor
 					lCall->arg[2].value != rCall->arg[2].value ||
 					lCall->arg[3].value != rCall->arg[3].value)
 				{
-					if (s_writeLog) LE_WARNING("elev stop index %zu script index %zu data dont match", j, k);
 					return false;
 				}
 			}
@@ -723,7 +681,6 @@ namespace LevelEditor
 	{
 		if (lTrig->clients.size() != rTrig->clients.size())
 		{
-			if (s_writeLog) LE_WARNING("trig client size not match");
 			return false;
 		}
 		if (lTrig->classId != rTrig->classId ||
@@ -738,7 +695,6 @@ namespace LevelEditor
 			lTrig->entityMask != rTrig->entityMask ||
 			lTrig->event != rTrig->event)
 		{
-			if (s_writeLog) LE_WARNING("trig data not match");
 			return false;
 		}
 
@@ -750,7 +706,6 @@ namespace LevelEditor
 				lClient->targetWall != rClient->targetWall ||
 				lClient->eventMask != rClient->eventMask)
 			{
-				if (s_writeLog) LE_WARNING("trig client index %zu data not match", j);
 				return false;
 			}
 		}
@@ -766,7 +721,6 @@ namespace LevelEditor
 			(lTele->dstPos.x != rTele->dstPos.x || lTele->dstPos.y != rTele->dstPos.y || lTele->dstPos.z != rTele->dstPos.z) ||
 			lTele->dstAngle != rTele->dstAngle)
 		{
-			if (s_writeLog) LE_WARNING("tele data not match");
 			return false;
 		}
 
@@ -792,67 +746,6 @@ namespace LevelEditor
 		}
 		assert(0); // Hard fail to catch mismatched class types. Something has gone wrong.
 		return false;
-	}
-
-	// Walk each member of two Editor_LevelInf structs testing for equality. Inf undo is scary.
-	bool compareLevelInfs(Editor_LevelInf& left, Editor_LevelInf& right)
-	{	
-		if (left.item.size() != right.item.size() ||
-			left.elevator.size() != right.elevator.size() ||
-			left.trigger.size() != right.trigger.size() ||
-			left.teleport.size() != right.teleport.size())
-		{
-			if (s_writeLog) LE_WARNING("compareLevelInfs(): vec sizes don't match");
-			return false;
-		}
-
-		for (size_t i = 0; i < left.item.size(); i++)
-		{
-			if ((left.item[i].name != right.item[i].name) ||
-				(left.item[i].wallNum != right.item[i].wallNum))
-			{
-				if (s_writeLog) LE_WARNING("compareLevelInfs(): item index %zu don't match", i);
-				return false;
-			}
-		}
-
-		for (size_t i = 0; i < left.elevator.size(); i++)
-		{
-			Editor_InfElevator* lElev = left.elevator[i];
-			Editor_InfElevator* rElev = right.elevator[i];
-
-			if (!isInfElevatorEqual(lElev, rElev))
-			{
-				if (s_writeLog) LE_WARNING("Elev index: %zu", i);
-				return false;
-			}
-		}
-
-		for (size_t i = 0; i < left.trigger.size(); i++)
-		{
-			Editor_InfTrigger* lTrig = left.trigger[i];
-			Editor_InfTrigger* rTrig = right.trigger[i];
-
-			if (!isInfTriggerEqual(lTrig, rTrig))
-			{
-				if (s_writeLog) LE_WARNING("Trig index: %zu", i);
-				return false;
-			}
-		}
-
-		for (size_t i = 0; i < left.teleport.size(); i++)
-		{
-			Editor_InfTeleporter* lTele = left.teleport[i];
-			Editor_InfTeleporter* rTele = right.teleport[i];
-	
-			if (!isInfTeleporterEqual(lTele, rTele))
-			{
-				if (s_writeLog) LE_WARNING("Tele index: %zu", i);
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	bool editor_parseElevatorCommand(s32 argCount, KEYWORD action, bool seqEnd, Editor_InfElevator* elev, s32& addon)
@@ -1838,7 +1731,7 @@ namespace LevelEditor
 		return true;
 	}
 
-	void clearInfItemTemp()
+	void clearInfItemBaseline()
 	{
 		for (s32 i = (s32)s_infItemBaseline.classData.size() - 1; i >= 0; i--)
 		{
@@ -1862,7 +1755,7 @@ namespace LevelEditor
 		s_infItemBaseline = {};
 	}
 
-	void setInfItemTemp(Editor_InfItem* infItem)
+	void setInfItemBaseline(Editor_InfItem* infItem)
 	{
 		s_infItemBaseline.name = s_infEditor.item->name;
 		s_infItemBaseline.wallNum = s_infEditor.item->wallNum;

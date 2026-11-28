@@ -365,6 +365,5 @@ namespace LevelEditor
 	Editor_InfTeleporter* allocTeleporter(Editor_InfItem* item);
 
 	u32 newInfUniqueId();
-	bool debugInfSerialDuplicateExists(const Editor_LevelInf& infData);
 	void clearInfData(Editor_LevelInf* levelInf, bool resetUniqueIdCounter = true);
 }

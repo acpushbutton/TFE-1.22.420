@@ -5456,7 +5456,6 @@ namespace LevelEditor
 
 		// Repopulate the Inf struct
 		copyInfData(&s_infSnapshot, &s_levelInf);
-		debugInfSerialDuplicateExists(s_levelInf);
 
 		// For now until the way snapshot memory is handled is refactored, to avoid duplicate code that will be removed later.
 		// TODO: Handle edit state properly here too.
@@ -5669,8 +5668,6 @@ namespace LevelEditor
 				readInfTeleporterFromSnapshot(tele);
 			}
 		}
-
-		debugInfSerialDuplicateExists(s_levelInf);
 	}
 
 	void level_createInfItemSnapshot(SnapshotBuffer* buffer)
